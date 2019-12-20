@@ -46,7 +46,7 @@ maxWorkers = 25;
 
 %%%%% These options generally remain fixed 
 clipped = 1; % if 0 use "full" trace with leading and trailing 0's
-n_localEM = 25; % set num local runs
+n_localEM = 24; % set num local runs
 n_steps_max = 500; % set max steps per inference
 eps = 1e-4; % set convergence criteria
 min_dp_per_inf = 1000; % inference will be aborted if fewer present 
