@@ -33,14 +33,13 @@ project = 'eveGtS2-NullS1';
 DataPath = ['../dat/' project '/'];
 % default path to model scripts
 modelPath = './utilities';
-savio = 0;
-K = 2;
+savio = 1;
+K = 3;
 w = 7;
 % minDp = 10;
 dpBootstrap = 1;
 nBoots = 2;
 stripe_bin_flag = true;
-n_protein_bins = 20;
 sampleSize = 4000;
 maxWorkers = 24;
 

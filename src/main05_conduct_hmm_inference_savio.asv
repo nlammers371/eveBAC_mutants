@@ -40,13 +40,12 @@ w = 7;
 dpBootstrap = 1;
 nBoots = 2;
 stripe_bin_flag = true;
-n_protein_bins = 20;
 sampleSize = 4000;
-maxWorkers = 6;
+maxWorkers = 24;
 
 %%%%% These options generally remain fixed 
 clipped = 1; % if 0 use "full" trace with leading and trailing 0's
-n_localEM = 25; % set num local runs
+n_localEM = 24; % set num local runs
 n_steps_max = 500; % set max steps per inference
 eps = 1e-4; % set convergence criteria
 min_dp_per_inf = 1000; % inference will be aborted if fewer present 
@@ -76,7 +75,7 @@ if savio
 else    
     out_prefix = '../out/';
 end
-outDir = [out_prefix project '/'];
+outDir = [out_prefix project '/K' num2str(K) 'w' num2str(w)];
 mkdir(outDir);
 
 Tres = trace_struct(1).TresInterp; % Time Resolution
