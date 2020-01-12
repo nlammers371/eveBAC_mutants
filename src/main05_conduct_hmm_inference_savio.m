@@ -33,8 +33,8 @@ project = 'eveGtS2-NullS1';
 DataPath = ['../dat/' project '/'];
 % default path to model scripts
 modelPath = './utilities';
-savio = 1;
-K = 3;
+savio = 0;
+K = 2;
 w = 7;
 % minDp = 10;
 dpBootstrap = 1;
@@ -42,7 +42,7 @@ nBoots = 2;
 stripe_bin_flag = true;
 n_protein_bins = 20;
 sampleSize = 4000;
-maxWorkers = 25;
+maxWorkers = 24;
 
 %%%%% These options generally remain fixed 
 clipped = 1; % if 0 use "full" trace with leading and trailing 0's
@@ -76,7 +76,7 @@ if savio
 else    
     out_prefix = '../out/';
 end
-outDir = [out_prefix project '/'];
+outDir = [out_prefix project '/K' num2str(K) 'w' num2str(w)];
 mkdir(outDir);
 
 Tres = trace_struct(1).TresInterp; % Time Resolution
