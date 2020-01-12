@@ -3,13 +3,13 @@
 #SBATCH --job-name=savio_test
 #
 # Partition:
-#SBATCH --partition=savio2
+#SBATCH --partition=savio
 #
 # QoS:
 #SBATCH --qos=savio_normal
 #
 # Account:
-#SBATCH --account=ac_mhmm
+#SBATCH --account=fc_mhmm
 #
 # Request one node:
 #SBATCH --nodes=1
