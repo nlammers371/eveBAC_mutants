@@ -18,7 +18,7 @@
 #SBATCH --cpus-per-task=1
 #
 # Number of Processors per Node:
-#SBATCH --ntasks-per-node=24
+#SBATCH --ntasks-per-node=20
 #
 # Wall clock limit:
 #SBATCH --time=72:00:00
