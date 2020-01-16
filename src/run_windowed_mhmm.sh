@@ -3,7 +3,7 @@
 #SBATCH --job-name=savio_test
 #
 # Partition:
-#SBATCH --partition=savio
+#SBATCH --partition=savio2
 #
 # QoS:
 #SBATCH --qos=savio_normal
@@ -18,7 +18,7 @@
 #SBATCH --cpus-per-task=1
 #
 # Number of Processors per Node:
-#SBATCH --ntasks-per-node=20
+#SBATCH --ntasks-per-node=24
 #
 # Wall clock limit:
 #SBATCH --time=72:00:00

@@ -29,18 +29,19 @@ close all
 warning('off','all') %Shut off Warnings
 
 % basic inputs
-project = 'eveGtS2-NullS1';
+% project = 'eveGtS2-NullS1';
+project = 'eveGtS2-WT';
 DataPath = ['../dat/' project '/'];
 % default path to model scripts
 modelPath = './utilities';
-savio = 1;
+savio = 0;
 K = 3;
 w = 7;
 % minDp = 10;
 dpBootstrap = 1;
-nBoots = 2;
+nBoots = 5;
 stripe_bin_flag = true;
-sampleSize = 4000;
+sampleSize = 8000;
 maxWorkers = 24;
 
 %%%%% These options generally remain fixed 
@@ -90,7 +91,8 @@ for i = 1:length(trace_struct)
     temp.qc_flag = trace_struct(i).qc_flag;
     temp.Stripe = mode(trace_struct(i).Stripe);    
     temp.MeanFluo = trace_struct(i).MeanFluo;
-    temp.ParticleID = trace_struct(i).ParticleID;        
+    temp.ParticleID = trace_struct(i).ParticleID;    
+    temp.N = numel(temp.fluo);
     trace_struct_filtered = [trace_struct_filtered temp];    
 end
 trace_struct_filtered = trace_struct_filtered([trace_struct_filtered.qc_flag]==1);
@@ -236,7 +238,7 @@ for s = 1:numel(stripe_index)
                 output.time_data = time_data;
             end
             output.skip_flag = skip_flag;
-            save([out_file '.mat'], 'output');           
+            save(out_file, 'output');           
         end  
     end
 end
