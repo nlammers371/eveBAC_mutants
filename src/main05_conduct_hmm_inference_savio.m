@@ -34,7 +34,7 @@ project = 'eveGtS2-WT';
 DataPath = ['../dat/' project '/'];
 % default path to model scripts
 modelPath = './utilities';
-savio = 0;
+savio = 1;
 K = 3;
 w = 7;
 % minDp = 10;
