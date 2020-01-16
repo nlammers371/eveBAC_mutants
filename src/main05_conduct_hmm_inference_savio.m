@@ -36,12 +36,12 @@ DataPath = ['../dat/' project '/'];
 modelPath = './utilities';
 savio = 0;
 K = 3;
-w = 6;
+w = 7;
 % minDp = 10;
 dpBootstrap = 1;
 nBoots = 5;
 stripe_bin_flag = true;
-sampleSize = 4000;
+sampleSize = 8000;
 maxWorkers = 24;
 
 %%%%% These options generally remain fixed 

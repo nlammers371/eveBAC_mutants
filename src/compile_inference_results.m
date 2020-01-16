@@ -2,8 +2,8 @@ clear
 close all
 
 % set path to inference results
-% project = 'eveGtS2-NullS1';
-project = 'eveGtS2-WT';
+project = 'eveGtS2-NullS1';
+% project = 'eveGtS2-WT';
 w = 6;
 K = 3;
 ResultsPath = ['../out/' project '/w' num2str(w) '_K' num2str(K) '/'];
@@ -89,16 +89,24 @@ end
         
 %% Plot
 close all
-cm1 = brewermap(9,'Set2');
+cm1 = flipud(brewermap(9,'Blues'));
+cm2 = brewermap(9,'Reds');
+ectopic_ids = [1 3];
+MarkerSize = 60;
+
 stripe_lgd = {'"stripe 0"','stripe 1','1-2 interstripe','stripe 2', 'stripe 3', 'stripe 4'};  
 % plot initiation rate 
 init_fig = figure;
 hold on
 sc = [];
 for s = 1:numel(StripeIndex)
-    e = errorbar(FluoBins,amp_mean_array(:,s)*60,amp_ste_array(:,s)*60,'Color','black');
+    e = errorbar(FluoBins,amp_mean_array(:,s)*60,amp_ste_array(:,s)*60,'o','Color','black');
     e.CapSize = 0;
-    sc = [sc scatter(FluoBins,amp_mean_array(:,s)*60,'MarkerFaceColor',cm1(s,:),'MarkerEdgeColor','black')];
+    cmap = cm2;
+    if ismember(s,ectopic_ids)
+        cmap = cm1(3:end,:);
+    end
+    sc = [sc scatter(FluoBins,amp_mean_array(:,s)*60,MarkerSize,'MarkerFaceColor',cmap(s,:),'MarkerEdgeColor','black')];
 end
 
 xlabel('fluorescence (au)')
@@ -108,40 +116,50 @@ grid on
 box on
 set(gca,'FontSize',14)
 saveas(init_fig,[FigPath 'init_rate_trends.png'])   
+saveas(init_fig,[FigPath 'init_rate_trends.pdf'])   
 
-% plot burst frequency
+%% plot burst frequency
 freq_fig = figure;
 hold on
 sc = [];
 for s = 1:numel(StripeIndex)
-    e = errorbar(FluoBins,freq_mean_array(:,s)*60,freq_ste_array(:,s)*60,'Color','black');
+    x_axis = FluoBins+rand(size(FluoBins))*1000-2000;
+    e = errorbar(x_axis,freq_mean_array(:,s)*60,freq_ste_array(:,s)*60,'o','Color','black');
     e.CapSize = 0;
-    sc = [sc scatter(FluoBins,freq_mean_array(:,s)*60,'MarkerFaceColor',cm1(s,:),'MarkerEdgeColor','black')];
+    cmap = cm2;
+    if ismember(s,ectopic_ids)
+        cmap = cm1(3:end,:);
+    end
+    sc = [sc scatter(x_axis,freq_mean_array(:,s)*60,MarkerSize,'MarkerFaceColor',cmap(s,:),'MarkerEdgeColor','black','MarkerFaceAlpha',1)];
 end
 
 xlabel('fluorescence (au)')
 ylabel('burst frequency (1/min)')
-legend(sc,stripe_lgd{:},'Location','northwest','Fontsize',12)
+% legend(sc,stripe_lgd{:},'Location','northwest','Fontsize',12)
 grid on
 box on
 set(gca,'FontSize',14)
 saveas(freq_fig,[FigPath 'burst_freq_trends.png'])
 
-% plot burst duration
+%% plot burst duration
 dur_fig = figure;
 hold on
 sc = [];
 for s = 1:numel(StripeIndex)
-    e = errorbar(FluoBins,dur_mean_array(:,s)/60,dur_ste_array(:,s)/60,'Color','black');
+    e = errorbar(FluoBins,dur_mean_array(:,s)/60,dur_ste_array(:,s)/60,'o','Color','black');
     e.CapSize = 0;
-    sc = [sc scatter(FluoBins,dur_mean_array(:,s)/60,'MarkerFaceColor',cm1(s,:),'MarkerEdgeColor','black')];
+    cmap = cm2;
+    if ismember(s,ectopic_ids)
+        cmap = cm1(3:end,:);
+    end
+    sc = [sc scatter(FluoBins,dur_mean_array(:,s)/60,MarkerSize,'MarkerFaceColor',cmap(s,:),'MarkerEdgeColor','black')];
 end
 
 xlabel('fluorescence (au)')
 ylabel('burst duration (min)')
 grid on
 box on
-legend(sc,stripe_lgd{:},'Location','northwest','Fontsize',12)
+% legend(sc,stripe_lgd{:},'Location','northwest','Fontsize',12)
 set(gca,'FontSize',14)
 saveas(dur_fig,[FigPath 'burst_dur_trends.png'])
 

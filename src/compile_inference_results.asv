@@ -109,14 +109,15 @@ box on
 set(gca,'FontSize',14)
 saveas(init_fig,[FigPath 'init_rate_trends.png'])   
 
-% plot burst frequency
+%% plot burst frequency
 freq_fig = figure;
 hold on
 sc = [];
 for s = 1:numel(StripeIndex)
-    e = errorbar(FluoBins,freq_mean_array(:,s)*60,freq_ste_array(:,s)*60,'Color','black');
+    x_axis = FluoBins+rand(size(FluoBins))*1000-2000;
+    e = errorbar(,freq_mean_array(:,s)*60,freq_ste_array(:,s)*60,'o','Color','black');
     e.CapSize = 0;
-    sc = [sc scatter(FluoBins,freq_mean_array(:,s)*60,'MarkerFaceColor',cm1(s,:),'MarkerEdgeColor','black')];
+    sc = [sc scatter(FluoBins,freq_mean_array(:,s)*60,75,'MarkerFaceColor',cm1(s,:),'MarkerEdgeColor','black','MarkerFaceAlpha',1)];
 end
 
 xlabel('fluorescence (au)')
@@ -127,7 +128,7 @@ box on
 set(gca,'FontSize',14)
 saveas(freq_fig,[FigPath 'burst_freq_trends.png'])
 
-% plot burst duration
+%% plot burst duration
 dur_fig = figure;
 hold on
 sc = [];
