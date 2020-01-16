@@ -29,8 +29,8 @@ close all
 warning('off','all') %Shut off Warnings
 
 % basic inputs
-% project = 'eveGtS2-NullS1';
-project = 'eveGtS2-WT';
+project = 'eveGtS2-NullS1';
+% project = 'eveGtS2-WT';
 DataPath = ['../dat/' project '/'];
 % default path to model scripts
 modelPath = './utilities';
