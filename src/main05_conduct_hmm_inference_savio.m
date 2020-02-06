@@ -37,6 +37,7 @@ modelPath = './utilities';
 savio = 1;
 K = 3;
 w = 7;
+ec_flag = false;
 dpBootstrap = 1;
 nBoots = 5;
 stripe_bin_flag = true;
@@ -45,7 +46,7 @@ maxWorkers = 24;
 t_start = 20;
 minDP = 2*w;
 stripe_set = 1:7;
-ec_flag = true;
+
 %%%%% These options generally remain fixed 
 n_localEM = 24; % set num local runs
 n_steps_max = 500; % set max steps per inference
