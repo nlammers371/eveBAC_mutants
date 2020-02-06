@@ -63,7 +63,8 @@ trace_struct = [];
 % Loop through filenames    
 for i = 1:length(file_list)      
     % extract data structures
-    processed_data = load([FolderPath '/' file_list(i).name]); % processed particles       
+    cp_name = [FolderPath '/' file_list(i).name];
+    processed_data = load(cp_name); % processed particles       
     % Extract compiled particles structure         
     cp_particles = processed_data.CompiledParticles;    
     if iscell(cp_particles)
@@ -140,17 +141,19 @@ for i = 1:length(file_list)
         % x, y, and z info                                
         temp_struct(i_pass).xPosParticle = NaN(size(cp_filter1));
         temp_struct(i_pass).yPosParticle = NaN(size(cp_filter1));
-        temp_struct(i_pass).zPosParticle = NaN(size(cp_filter1));        
+        temp_struct(i_pass).zPosParticle = NaN(size(cp_filter1)); 
+        temp_struct(i_pass).Stripe = NaN(size(cp_filter1)); 
         temp_struct(i_pass).xPosParticle(cp_filter1) = cp_particles(j).xPos(cp_filter2);
         temp_struct(i_pass).yPosParticle(cp_filter1) = cp_particles(j).yPos(cp_filter2);   
         temp_struct(i_pass).zPosParticle(cp_filter1) = cp_particles(j).zPos(cp_filter2);
         % extract bin info'
-        temp_struct(i_pass).Stripe = cp_particles(j).Stripe;
+        temp_struct(i_pass).Stripe(cp_filter1) = cp_particles(j).Stripe(cp_filter2);
         temp_struct(i_pass).FluoBin = cp_particles(j).particleFluoBin;
         temp_struct(i_pass).MeanFluo = cp_particles(j).AverageFluor;
         temp_struct(i_pass).FluoBinEdges = cp_particles(j).BinEdges;
         if ap_flag
-            temp_struct(i_pass).APPosParticle = cp_particles(j).APpos*100;
+            temp_struct(i_pass).APPosParticle = NaN(size(cp_filter1));
+            temp_struct(i_pass).APPosParticle(cp_filter1) = cp_particles(j).APpos(cp_filter2)*100;
         end
         % 3D info
         if threeD_flag
@@ -163,6 +166,8 @@ for i = 1:length(file_list)
         temp_struct(i_pass).N = nDP;
         temp_struct(i_pass).sparsity = sparsity;        
         temp_struct(i_pass).qc_flag = qc_flag; 
+        % save file path
+        temp_struct(i_pass).source = cp_name;
         i_pass = i_pass + 1;
     end      
     trace_struct = [trace_struct  temp_struct];        

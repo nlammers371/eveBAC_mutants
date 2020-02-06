@@ -37,15 +37,16 @@ modelPath = './utilities';
 savio = 1;
 K = 3;
 w = 7;
-% minDp = 10;
 dpBootstrap = 1;
 nBoots = 5;
 stripe_bin_flag = true;
-sampleSize = 8000;
+SampleSize = 3000;
 maxWorkers = 24;
-
+t_start = 20;
+minDP = 2*w;
+stripe_set = 1:7;
+ec_flag = true;
 %%%%% These options generally remain fixed 
-clipped = 1; % if 0 use "full" trace with leading and trailing 0's
 n_localEM = 24; % set num local runs
 n_steps_max = 500; % set max steps per inference
 eps = 1e-4; % set convergence criteria
@@ -76,7 +77,7 @@ if savio
 else    
     out_prefix = '../out/';
 end
-outDir = [out_prefix project '/K' num2str(K) 'w' num2str(w)];
+outDir = [out_prefix project '/K' num2str(K) 'w' num2str(w) '_ec' num2str(ec_flag)];
 mkdir(outDir);
 
 Tres = trace_struct(1).TresInterp; % Time Resolution
@@ -85,34 +86,59 @@ trace_struct_filtered = [];
 for i = 1:length(trace_struct)
     temp = struct;
     time = trace_struct(i).time_interp;
-    fluo = trace_struct(i).fluo_interp;    
-    temp.fluo = fluo;
-    temp.time = time;     
-    temp.qc_flag = trace_struct(i).qc_flag;
-    temp.Stripe = mode(trace_struct(i).Stripe);    
-    temp.MeanFluo = trace_struct(i).MeanFluo;
-    temp.ParticleID = trace_struct(i).ParticleID;    
-    temp.N = numel(temp.fluo);
-    trace_struct_filtered = [trace_struct_filtered temp];    
+    time_raw = trace_struct(i).time;
+    fluo = trace_struct(i).fluo_interp;  
+    time_ft = time / 60 >= t_start;
+    time_ft_raw = time_raw / 60 >= t_start;
+    if sum(time_ft) >= minDP
+        temp.fluo = fluo(time_ft);
+        temp.time = time(time_ft);     
+        temp.qc_flag = trace_struct(i).qc_flag;
+        temp.Stripe = mode(trace_struct(i).Stripe(time_ft_raw));   
+        temp.ec_flag = ~ismember(temp.Stripe,stripe_set);
+        temp.MeanFluo = nanmean(fluo(time_ft));
+        temp.ParticleID = trace_struct(i).ParticleID;    
+        temp.N = sum(time_ft);
+        trace_struct_filtered = [trace_struct_filtered temp];    
+    end
 end
 trace_struct_filtered = trace_struct_filtered([trace_struct_filtered.qc_flag]==1);
 
 % generate fluorescence bins
-fluo_vec = [trace_struct_filtered.MeanFluo];
-prctile_vec = 0:.2:1;
-fluo_quantiles = quantile(fluo_vec,prctile_vec);
-fluo_id_vec = discretize(fluo_vec,fluo_quantiles);
-stripe_id_vec = [trace_struct_filtered.Stripe];
+if ~ec_flag
+    stripe_id_vec = [trace_struct_filtered.Stripe];
+else
+    stripe_id_vec = [trace_struct_filtered.ec_flag];
+end
 stripe_index = unique(stripe_id_vec);
-for i = 1:numel(fluo_id_vec)
-    trace_struct_filtered(i).FluoBin = fluo_id_vec(i);
+fluo_bin_cell = cell(1,numel(stripe_index));
+for s = 1:numel(stripe_index)
+    % filter for stripe
+    stripe_ft = stripe_index(s) == stripe_id_vec;
+    stripe_indices = find(stripe_ft);
+    fluo_vec = [trace_struct_filtered(stripe_ft).MeanFluo];
+    nTotal = sum([trace_struct_filtered(stripe_ft).N]);
+    nBins = ceil(nTotal/SampleSize);
+    prctile_vec = linspace(0.2,.98,nBins);
+    % get quantile bins
+    fluo_quantiles = quantile(fluo_vec,prctile_vec);
+    fluo_bin_cell{s} = fluo_quantiles;
+    fluo_id_vec_temp = discretize(fluo_vec,fluo_quantiles);
+    iter = 1;
+    for ind = stripe_indices
+        trace_struct_filtered(ind).FluoBin = fluo_id_vec_temp(iter);
+        trace_struct_filtered(ind).FluoBins = fluo_quantiles;
+        iter = iter + 1;
+    end
 end
 
-
+fluo_id_vec = [trace_struct_filtered.FluoBin];
 %%% Conduct Inference
 % iterate through designated groups
+rng('shuffle')
 for s = 1:numel(stripe_index)
-    for t = 1:length(prctile_vec)-1
+    fluo_bins = fluo_bin_cell{s};
+    for t = 1:length(fluo_bins)-1
         iter_filter = fluo_id_vec == t & stripe_id_vec == stripe_index(s);
         for b = 1:nBoots
             iter_start = now;
@@ -143,10 +169,10 @@ for s = 1:numel(stripe_index)
                     ndp = 0;    
                     sample_ids = [];                    
                     %Reset bootstrap size to be on order of set size for small bins
-                    if set_size < sampleSize
-                        sampleSize = ceil(set_size/100)*100;
+                    if set_size < SampleSize
+                        SampleSize = ceil(set_size/100)*100;
                     end
-                    while ndp < sampleSize
+                    while ndp < SampleSize
                         tr_id = randsample(sample_index,1);
                         sample_ids = [sample_ids tr_id];
                         ndp = ndp + length(inference_set(tr_id).time);
@@ -190,7 +216,7 @@ for s = 1:numel(stripe_index)
                     v_init = param_init.v;                        
                     noise_init = param_init.noise;
                     %--------------------LocalEM Call-------------------------%
-                    local_out = local_em_MS2_reduced_memory(fluo_data, ...
+                    local_out = local_em_MS2_reduced_memory_truncated(fluo_data, ...
                         v_init, noise_init, pi0_log_init', A_log_init, K, w, ...
                         alpha, n_steps_max, eps);                    
                     %---------------------------------------------------------%                
@@ -220,8 +246,7 @@ for s = 1:numel(stripe_index)
                 output.total_time = 100000*(now - iter_start);            
                 % other inference characteristics                                
                 output.dp_bootstrap_flag = dpBootstrap;   
-                output.iter_id = b;            
-                output.clipped = clipped;            
+                output.iter_id = b;                     
                 output.particle_ids = sample_particles;
                 output.FluoBin = t;
                 output.Stripe = stripe_index(s);
@@ -232,10 +257,12 @@ for s = 1:numel(stripe_index)
                 output.w = w;
                 output.alpha = alpha;
                 output.deltaT = Tres; 
-                output.sampleSize = sampleSize; 
+                output.sampleSize = SampleSize; 
                 % save inference data used
+                output.fluo_bins = fluo_bins;
                 output.fluo_data = fluo_data;
                 output.time_data = time_data;
+                output.ec_flag = ec_flag;
             end
             output.skip_flag = skip_flag;
             save(out_file, 'output');           
