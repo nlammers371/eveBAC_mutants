@@ -34,7 +34,8 @@ project = 'eveGtMut_NullS1_normAP';
 DataPath = ['../dat/' project '/'];
 % default path to model scripts
 modelPath = './utilities';
-savio = 1;
+savioFlag = 0;
+awsFlag = 0;
 K = 3;
 w = 7;
 ec_flag = true;
@@ -42,7 +43,7 @@ dpBootstrap = 1;
 nBoots = 5;
 stripe_bin_flag = true;
 SampleSize = 3000;
-maxWorkers = 24;
+maxWorkers = 16;
 t_start = 20;
 minDP = 2*w;
 if contains(project,'NullS1')
@@ -77,7 +78,7 @@ load([DataPath '/trace_struct.mat'],'trace_struct') % load data
 % Set write path (inference results are now written to external directory)
 
 % set write path
-if savio
+if savioFlag
     out_prefix = '/global/scratch/nlammers/'; %hmmm_data/inference_out/';
 else    
     out_prefix = '../out/';
