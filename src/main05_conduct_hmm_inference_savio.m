@@ -37,7 +37,7 @@ modelPath = './utilities';
 savio = 1;
 K = 3;
 w = 7;
-ec_flag = false;
+ec_flag = true;
 dpBootstrap = 1;
 nBoots = 5;
 stripe_bin_flag = true;
@@ -45,7 +45,11 @@ SampleSize = 3000;
 maxWorkers = 24;
 t_start = 20;
 minDP = 2*w;
-stripe_set = 1:7;
+if contains(project,'NullS1')
+    stripe_set = 2:7;
+else
+    stripe_set = 1:7;
+end
 
 %%%%% These options generally remain fixed 
 n_localEM = 24; % set num local runs
@@ -95,7 +99,12 @@ for i = 1:length(trace_struct)
         temp.fluo = fluo(time_ft);
         temp.time = time(time_ft);     
         temp.qc_flag = trace_struct(i).qc_flag;
-        temp.Stripe = mode(trace_struct(i).Stripe(time_ft_raw));   
+        stripe_id = mode(trace_struct(i).Stripe(time_ft_raw));
+        ap_pos = nanmean(trace_struct(i).APPosParticle);
+        if ap_pos < 37 && stripe_id == 2
+            stripe_id = 1.5;
+        end
+        temp.Stripe = stripe_id;   
         temp.ec_flag = ~ismember(temp.Stripe,stripe_set);
         temp.MeanFluo = nanmean(fluo(time_ft));
         temp.ParticleID = trace_struct(i).ParticleID;    
@@ -119,7 +128,7 @@ for s = 1:numel(stripe_index)
     stripe_indices = find(stripe_ft);
     fluo_vec = [trace_struct_filtered(stripe_ft).MeanFluo];
     nTotal = sum([trace_struct_filtered(stripe_ft).N]);
-    nBins = ceil(nTotal/SampleSize);
+    nBins = ceil(nTotal/SampleSize)+1;
     prctile_vec = linspace(0.2,.98,nBins);
     % get quantile bins
     fluo_quantiles = quantile(fluo_vec,prctile_vec);
@@ -250,8 +259,7 @@ for s = 1:numel(stripe_index)
                 output.iter_id = b;                     
                 output.particle_ids = sample_particles;
                 output.FluoBin = t;
-                output.Stripe = stripe_index(s);
-                output.FluoBins = fluo_quantiles;
+                output.Stripe = stripe_index(s);                
                 if dpBootstrap                                    
                     output.N = ndp;
                 end

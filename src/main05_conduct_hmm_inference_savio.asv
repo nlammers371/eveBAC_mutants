@@ -29,14 +29,15 @@ close all
 warning('off','all') %Shut off Warnings
 
 % basic inputs
-project = 'eveGtS2-NullS1';
-% project = 'eveGtS2-WT';
+% project = 'eveGtS2-NullS1';
+project = 'eveGtS2-WT';
 DataPath = ['../dat/' project '/'];
 % default path to model scripts
 modelPath = './utilities';
-savio = 0;
-K = 2;
-w = 4;
+savio = 1;
+K = 3;
+w = 7;
+ec_flag = false;
 dpBootstrap = 1;
 nBoots = 5;
 stripe_bin_flag = true;
@@ -45,7 +46,7 @@ maxWorkers = 24;
 t_start = 20;
 minDP = 2*w;
 stripe_set = 1:7;
-ec_flag = false;
+
 %%%%% These options generally remain fixed 
 n_localEM = 24; % set num local runs
 n_steps_max = 500; % set max steps per inference
@@ -105,7 +106,11 @@ end
 trace_struct_filtered = trace_struct_filtered([trace_struct_filtered.qc_flag]==1);
 
 % generate fluorescence bins
-stripe_id_vec = [trace_struct_filtered.Stripe];
+if ~ec_flag
+    stripe_id_vec = [trace_struct_filtered.Stripe];
+else
+    stripe_id_vec = [trace_struct_filtered.ec_flag];
+end
 stripe_index = unique(stripe_id_vec);
 fluo_bin_cell = cell(1,numel(stripe_index));
 for s = 1:numel(stripe_index)
@@ -114,7 +119,7 @@ for s = 1:numel(stripe_index)
     stripe_indices = find(stripe_ft);
     fluo_vec = [trace_struct_filtered(stripe_ft).MeanFluo];
     nTotal = sum([trace_struct_filtered(stripe_ft).N]);
-    nBins = ceil(nTotal/SampleSize);
+    nBins = ceil(nTotal/SampleSize)+1;
     prctile_vec = linspace(0.2,.98,nBins);
     % get quantile bins
     fluo_quantiles = quantile(fluo_vec,prctile_vec);
@@ -245,8 +250,7 @@ for s = 1:numel(stripe_index)
                 output.iter_id = b;                     
                 output.particle_ids = sample_particles;
                 output.FluoBin = t;
-                output.Stripe = stripe_index(s);
-                output.FluoBins = fluo_quantiles;
+                output.Stripe = stripe_index(s);                
                 if dpBootstrap                                    
                     output.N = ndp;
                 end
@@ -258,6 +262,7 @@ for s = 1:numel(stripe_index)
                 output.fluo_bins = fluo_bins;
                 output.fluo_data = fluo_data;
                 output.time_data = time_data;
+                output.ec_flag = ec_flag;
             end
             output.skip_flag = skip_flag;
             save(out_file, 'output');           
