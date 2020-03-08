@@ -75,7 +75,7 @@ for i = 1:length(file_list)
     threeD_flag = isfield(cp_particles,'Fluo3DRaw');        
     % determine whether there is AP info
     ap_flag = isfield(cp_particles, 'APpos');
-        
+    ap_norm_flag = isfield(cp_particles,'APPos_Normalized');
     % set identifier
     setID = i;            
     % pull trace, time, and frame variables
@@ -153,7 +153,11 @@ for i = 1:length(file_list)
         temp_struct(i_pass).FluoBinEdges = cp_particles(j).BinEdges;
         if ap_flag
             temp_struct(i_pass).APPosParticle = NaN(size(cp_filter1));
-            temp_struct(i_pass).APPosParticle(cp_filter1) = cp_particles(j).APpos(cp_filter2)*100;
+            temp_struct(i_pass).APPosParticle(cp_filter1) = cp_particles(j).APpos(cp_filter2)*100;            
+        end
+        if ap_norm_flag
+            temp_struct(i_pass).APPosParticleNorm = NaN(size(cp_filter1));
+            temp_struct(i_pass).APPosParticleNorm(cp_filter1) = cp_particles(j).APPos_Normalized(cp_filter2)*100;
         end
         % 3D info
         if threeD_flag

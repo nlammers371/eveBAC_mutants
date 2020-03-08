@@ -29,7 +29,7 @@ close all
 warning('off','all') %Shut off Warnings
 
 % basic inputs
-project = 'eveGtS2-NullS1';
+project = 'eveGtMut_NullS1_normAP';
 % project = 'eveGtS2-WT';
 DataPath = ['../dat/' project '/'];
 % default path to model scripts
@@ -100,7 +100,7 @@ for i = 1:length(trace_struct)
         temp.time = time(time_ft);     
         temp.qc_flag = trace_struct(i).qc_flag;
         stripe_id = mode(trace_struct(i).Stripe(time_ft_raw));
-        ap_pos = nanmean(trace_struct(i).APPosParticle);
+        ap_pos = nanmean(trace_struct(i).APPosParticleNorm);
         if ap_pos < 37 && stripe_id == 2
             stripe_id = 1.5;
         end
