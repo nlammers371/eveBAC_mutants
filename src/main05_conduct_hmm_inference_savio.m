@@ -29,18 +29,18 @@ close all
 warning('off','all') %Shut off Warnings
 
 % basic inputs
-project = 'eveGtMut_NullS1_normAP';
+project = 'eveGtMut_WTS1_normAP';
 % project = 'eveGtS2-WT';
 DataPath = ['../dat/' project '/'];
 % default path to model scripts
 modelPath = './utilities';
-savioFlag = 0;
+savioFlag = 1;
 awsFlag = 0;
 K = 3;
 w = 7;
-ec_flag = true;
+ec_flag = false;
 dpBootstrap = 1;
-nBoots = 5;
+nBoots = 2;
 stripe_bin_flag = true;
 SampleSize = 3000;
 maxWorkers = 16;
@@ -130,7 +130,7 @@ for s = 1:numel(stripe_index)
     fluo_vec = [trace_struct_filtered(stripe_ft).MeanFluo];
     nTotal = sum([trace_struct_filtered(stripe_ft).N]);
     nBins = ceil(nTotal/SampleSize)+1;
-    prctile_vec = linspace(0.2,.98,nBins);
+    prctile_vec = linspace(0.025,.975,nBins);
     % get quantile bins
     fluo_quantiles = quantile(fluo_vec,prctile_vec);
     fluo_bin_cell{s} = fluo_quantiles;
@@ -147,6 +147,7 @@ fluo_id_vec = [trace_struct_filtered.FluoBin];
 %%% Conduct Inference
 % iterate through designated groups
 rng('shuffle')
+stripe_index = 3;
 for s = 1:numel(stripe_index)
     fluo_bins = fluo_bin_cell{s};
     for t = 1:length(fluo_bins)-1

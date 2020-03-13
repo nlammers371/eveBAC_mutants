@@ -2,7 +2,7 @@ clear
 close all
 
 % set path to inference results
-project = 'eveGtS2-NullS1';
+project = 'eveGtMut_NullS1_normAP';
 % project = 'eveGtS2-WT';
 w = 7;
 K = 3;
@@ -28,6 +28,11 @@ for f = 1:numel(FileList)
     end
 end
 
+%% Make plots to assess inference coverage
+
+
+
+%%
 % Extract average parameter trends
 Tres = inference_results(1).deltaT;
 stripe_bin_vec = [inference_results.Stripe];
