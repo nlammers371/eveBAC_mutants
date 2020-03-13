@@ -147,7 +147,6 @@ fluo_id_vec = [trace_struct_filtered.FluoBin];
 %%% Conduct Inference
 % iterate through designated groups
 rng('shuffle')
-stripe_index = 3;
 for s = 1:numel(stripe_index)
     fluo_bins = fluo_bin_cell{s};
     for t = 1:length(fluo_bins)-1
