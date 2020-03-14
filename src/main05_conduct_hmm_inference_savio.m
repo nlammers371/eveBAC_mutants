@@ -29,7 +29,7 @@ close all
 warning('off','all') %Shut off Warnings
 
 % basic inputs
-project = 'eveGtMut_NullS1_normAP';
+project = 'eveGtMut_WTS1_normAP';
 % project = 'eveGtS2-WT';
 DataPath = ['../dat/' project '/'];
 % default path to model scripts
