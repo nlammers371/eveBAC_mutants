@@ -129,8 +129,8 @@ for s = 1:numel(stripe_index)
     stripe_ft = stripe_index(s) == stripe_id_vec;
     stripe_indices = find(stripe_ft);
     fluo_vec = [trace_struct_filtered(stripe_ft).MeanFluo];
-    adjustment_factor = prctile_limits(2) - prctile_limits(1);
-    nTotal = sum([trace_struct_filtered(stripe_ft).N])*adjustment_factor;
+    adjustment_factor = prctile_limits(2) -
+    nTotal = sum([trace_struct_filtered(stripe_ft).N]);
     nBins = ceil(nTotal/SampleSize)+1;
     prctile_vec = linspace(0.025,.975,nBins);
     % get quantile bins
