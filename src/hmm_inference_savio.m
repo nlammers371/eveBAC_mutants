@@ -13,7 +13,7 @@ K = 3;
 w = 7;
 ec_flag = true;
 
-nBoots = 5;
+nBoots = 2;
 SampleSize = 3000;
 maxWorkers = 24;
 t_start = 25;
