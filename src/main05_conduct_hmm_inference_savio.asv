@@ -1,24 +1,44 @@
+% main05_conduct_hmm_inference(project,varargin)
+%
+% DESCRIPTION
+% Script to conduct HMM inference
+%
+% ARGUMENTS
+% project: master ID variable 
+%
+% modelPath: file path to folder containing hmmm scripts
+%
+% w: Integer corresponding number of time steps for Pol II to transcribe
+% gene
+%
+%
+% OPTIONS
+% dropboxFolder: Path to data folder where you wish to save
+%                pipeline-generated data sets and figures. If this
+%                var is not specified, output will be saved one level
+%                above git repo in the folder structure
+% savio: if 1, indicates we are running inference on savio cluster
+% K: number of states
+% minDp: min data points needed to be included in inferece
+%
+% OUTPUT: nucleus_struct_protein: compiled data set with protein samples
+
+% function output = main05_conduct_hmm_inference_savio%(project, DropboxFolder, varargin)
 clear
 close all
 warning('off','all') %Shut off Warnings
 
 % basic inputs
-project = 'eveGtMut_WTS1_normAP';
+project = 'eveGtMut_NullS1_normAP';
 % project = 'eveGtS2-WT';
 DataPath = ['../dat/' project '/'];
 % default path to model scripts
 modelPath = './utilities';
 savioFlag = 1;
 awsFlag = 0;
-<<<<<<< HEAD:src/hmm_inference_savio.asv
-K = 2;
-w = 4;
-ec_flag = true;
-=======
 K = 3;
 w = 7;
 ec_flag = false;
->>>>>>> 9eba9db67fce66972165a4475f6c522a08b2fdc9:src/main05_conduct_hmm_inference_savio.m
 dpBootstrap = 1;
 nBoots = 2;
 stripe_bin_flag = true;
@@ -26,11 +46,7 @@ SampleSize = 3000;
 maxWorkers = 16;
 t_start = 20;
 minDP = 2*w;
-<<<<<<< HEAD:src/hmm_inference_savio.asv
-
-=======
 prctile_limits = [0.0275 0.975];
->>>>>>> 9eba9db67fce66972165a4475f6c522a08b2fdc9:src/main05_conduct_hmm_inference_savio.m
 if contains(project,'NullS1')
     stripe_set = 2:7;
 else
@@ -113,8 +129,8 @@ for s = 1:numel(stripe_index)
     stripe_ft = stripe_index(s) == stripe_id_vec;
     stripe_indices = find(stripe_ft);
     fluo_vec = [trace_struct_filtered(stripe_ft).MeanFluo];
-    adjustment_factor = prctile_limits(2) - prctile_limits(1);
-    nTotal = sum([trace_struct_filtered(stripe_ft).N])*adjustment_factor;
+    adjustment_factor = prctile_limits(2) -
+    nTotal = sum([trace_struct_filtered(stripe_ft).N]);
     nBins = ceil(nTotal/SampleSize)+1;
     prctile_vec = linspace(0.025,.975,nBins);
     % get quantile bins
