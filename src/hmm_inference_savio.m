@@ -1,52 +1,24 @@
-% main05_conduct_hmm_inference(project,varargin)
-%
-% DESCRIPTION
-% Script to conduct HMM inference
-%
-% ARGUMENTS
-% project: master ID variable 
-%
-% modelPath: file path to folder containing hmmm scripts
-%
-% w: Integer corresponding number of time steps for Pol II to transcribe
-% gene
-%
-%
-% OPTIONS
-% dropboxFolder: Path to data folder where you wish to save
-%                pipeline-generated data sets and figures. If this
-%                var is not specified, output will be saved one level
-%                above git repo in the folder structure
-% savio: if 1, indicates we are running inference on savio cluster
-% K: number of states
-% minDp: min data points needed to be included in inferece
-%
-% OUTPUT: nucleus_struct_protein: compiled data set with protein samples
-
-% function output = main05_conduct_hmm_inference_savio%(project, DropboxFolder, varargin)
 clear
 close all
 warning('off','all') %Shut off Warnings
 
 % basic inputs
-project = 'eveGtMut_WTS1_normAP';
-% project = 'eveGtS2-WT';
+project = 'eveGtMut_NullS1_normAP';
 DataPath = ['../dat/' project '/'];
 % default path to model scripts
 modelPath = './utilities';
 savioFlag = 1;
-awsFlag = 0;
+
 K = 3;
 w = 7;
-ec_flag = false;
-dpBootstrap = 1;
-nBoots = 2;
-stripe_bin_flag = true;
+ec_flag = true;
+
+nBoots = 5;
 SampleSize = 3000;
-maxWorkers = 16;
-t_start = 20;
+maxWorkers = 24;
+t_start = 25;
 minDP = 2*w;
-prctile_limits = [0.0275 0.975];
+
 if contains(project,'NullS1')
     stripe_set = 2:7;
 else
@@ -54,6 +26,7 @@ else
 end
 
 %%%%% These options generally remain fixed 
+dpBootstrap = 1;
 n_localEM = 24; % set num local runs
 n_steps_max = 500; % set max steps per inference
 eps = 1e-4; % set convergence criteria
@@ -129,10 +102,9 @@ for s = 1:numel(stripe_index)
     stripe_ft = stripe_index(s) == stripe_id_vec;
     stripe_indices = find(stripe_ft);
     fluo_vec = [trace_struct_filtered(stripe_ft).MeanFluo];
-    adjustment_factor = prctile_limits(2) - prctile_limits(1);
-    nTotal = sum([trace_struct_filtered(stripe_ft).N])*adjustment_factor;
+    nTotal = sum([trace_struct_filtered(stripe_ft).N]);
     nBins = ceil(nTotal/SampleSize)+1;
-    prctile_vec = linspace(0.025,.975,nBins);
+    prctile_vec = linspace(0.2,.98,nBins);
     % get quantile bins
     fluo_quantiles = quantile(fluo_vec,prctile_vec);
     fluo_bin_cell{s} = fluo_quantiles;
@@ -148,9 +120,8 @@ end
 fluo_id_vec = [trace_struct_filtered.FluoBin];
 %%% Conduct Inference
 % iterate through designated groups
-inference_ids = [1:2 3:5];
 rng('shuffle')
-for s = inference_ids
+for s = 1:numel(stripe_index)
     fluo_bins = fluo_bin_cell{s};
     for t = 1:length(fluo_bins)-1
         iter_filter = fluo_id_vec == t & stripe_id_vec == stripe_index(s);
