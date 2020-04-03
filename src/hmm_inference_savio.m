@@ -1,51 +1,24 @@
-% main05_conduct_hmm_inference(project,varargin)
-%
-% DESCRIPTION
-% Script to conduct HMM inference
-%
-% ARGUMENTS
-% project: master ID variable 
-%
-% modelPath: file path to folder containing hmmm scripts
-%
-% w: Integer corresponding number of time steps for Pol II to transcribe
-% gene
-%
-%
-% OPTIONS
-% dropboxFolder: Path to data folder where you wish to save
-%                pipeline-generated data sets and figures. If this
-%                var is not specified, output will be saved one level
-%                above git repo in the folder structure
-% savio: if 1, indicates we are running inference on savio cluster
-% K: number of states
-% minDp: min data points needed to be included in inferece
-%
-% OUTPUT: nucleus_struct_protein: compiled data set with protein samples
-
-% function output = main05_conduct_hmm_inference_savio%(project, DropboxFolder, varargin)
 clear
 close all
 warning('off','all') %Shut off Warnings
 
 % basic inputs
 project = 'eveGtMut_NullS1_normAP';
-% project = 'eveGtS2-WT';
 DataPath = ['../dat/' project '/'];
 % default path to model scripts
 modelPath = './utilities';
-savioFlag = 0;
-awsFlag = 0;
+savioFlag = 1;
+
 K = 3;
 w = 7;
 ec_flag = true;
-dpBootstrap = 1;
+
 nBoots = 5;
-stripe_bin_flag = true;
 SampleSize = 3000;
-maxWorkers = 16;
-t_start = 20;
+maxWorkers = 24;
+t_start = 25;
 minDP = 2*w;
+
 if contains(project,'NullS1')
     stripe_set = 2:7;
 else
@@ -53,6 +26,7 @@ else
 end
 
 %%%%% These options generally remain fixed 
+dpBootstrap = 1;
 n_localEM = 24; % set num local runs
 n_steps_max = 500; % set max steps per inference
 eps = 1e-4; % set convergence criteria

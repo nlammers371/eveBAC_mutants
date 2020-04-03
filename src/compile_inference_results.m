@@ -6,7 +6,7 @@ project = 'eveGtS2-NullS1';
 % project = 'eveGtS2-WT';
 w = 7;
 K = 3;
-ec_flag = true;
+ec_flag = false;
 ResultsPath = ['../out/' project '/K' num2str(K) 'w' num2str(w) '_ec' num2str(ec_flag) '/'];
 FileList = dir([ResultsPath '/*.mat']);
 % make figure path
