@@ -11,7 +11,7 @@ savioFlag = 1;
 
 K = 3;
 w = 7;
-ec_flag = true;
+ec_flag = false;
 
 nBoots = 2;
 SampleSize = 3000;
