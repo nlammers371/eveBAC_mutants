@@ -1,14 +1,13 @@
 clear 
 close all
-addpath('utilities')
+
 % set path to inference results
-project = 'eveGtMut_WTS1_normAP';
+project = 'eveGtS2-NullS1';
 % project = 'eveGtS2-WT';
 w = 7;
 K = 3;
 ec_flag = false;
-DataPath = 'S:\Nick\Dropbox\eveBAC_mutant_data\';
-ResultsPath = [DataPath project '/K' num2str(K) 'w' num2str(w) '_ec' num2str(ec_flag) '/'];
+ResultsPath = ['../out/' project '/K' num2str(K) 'w' num2str(w) '_ec' num2str(ec_flag) '/'];
 FileList = dir([ResultsPath '/*.mat']);
 % make figure path
 FigPath = ['../fig/' project '/w' num2str(w) '_K' num2str(K) '_ec' num2str(ec_flag) '/'];
@@ -29,8 +28,6 @@ for f = 1:numel(FileList)
     end
 end
 
-
-%%
 % Extract average parameter trends
 Tres = inference_results(1).deltaT;
 stripe_bin_vec = [inference_results.Stripe];
@@ -54,7 +51,7 @@ for s = 1:numel(stripe_index)
     fluo_bin_vec = [stripe_results.FluoBin];
     fluo_index = unique(fluo_bin_vec);
     fluo_axis = (stripe_results(1).fluo_bins(1:end-1)+stripe_results(1).fluo_bins(2:end))/2;
-    fluo_axis_cell{s} = fluo_axis(fluo_index);
+    fluo_axis_cell{s} = fluo_axis;
 
     for f = 1:numel(fluo_index)
         iter_indices = find(fluo_bin_vec==fluo_index(f));
@@ -63,11 +60,6 @@ for s = 1:numel(stripe_index)
         freq_vec = NaN(1,numel(iter_indices));
         for i = 1:numel(iter_indices)
             [r,ri] = sort(stripe_results(iter_indices(i)).r);
-            if r(1)/r(3) < -0.01 % throw out non-physical results
-                continue
-%             elseif r(1)/r(3) > 0.05               
-%                 error('wtf')
-            end
             A = stripe_results(iter_indices(i)).A_mat(ri,ri);
 %             [V,D] = eig(A);
 %             [~,di] = max(diag(D));
@@ -84,7 +76,7 @@ for s = 1:numel(stripe_index)
             [~,di] = max(diag(D));
             ss = V(:,di) / sum(V(:,di));
             % mean initiation rate
-            amp_vec(i) = (ss(2:3)'*r(2:3)) / sum(ss(2:3));        
+            amp_vec(i) = (ss(2)*r(2) + ss(3)*r(3)) / (ss(2) + ss(3));        
             % convert o rates
 %             R_eff = logm(A_eff) / Tres;
             dur_vec(i) = -1/R(1,1) *(1/ss(1) - 1);
@@ -109,13 +101,15 @@ for s = 1:numel(stripe_index)
 end
         
         
-%% Plot
+%%% Plot
 close all
+
+
 MarkerSize = 60;
 
 if ec_flag
     ectopic_ids = [2];
-    stripe_lgd = {'stripe regions','ectopic regions'};  
+    stripe_lgd = {'ectopic regions','stripe regions'};  
     cm1 = flipud(brewermap(9,'Blues'));
     cm1 = repmat(cm1(5,:),9,1);
     cm2 = brewermap(9,'Reds');
@@ -126,12 +120,11 @@ else
     cm1 = flipud(brewermap(9,'Blues'));
     cm2 = brewermap(9,'Reds');
 end
-
 % plot initiation rate 
 init_fig = figure;
 hold on
 sc = [];
-for s = 1:numel(stripe_index)-1
+for s = 1:numel(stripe_index)
     e = errorbar(fluo_axis_cell{s},amp_mean_cell{s}*60,amp_ste_cell{s}*60,'o','Color','black');
     e.CapSize = 0;
     cmap = cm2;
@@ -150,11 +143,11 @@ set(gca,'FontSize',14)
 saveas(init_fig,[FigPath 'init_rate_trends_ec' num2str(ec_flag) '.png'])   
 saveas(init_fig,[FigPath 'init_rate_trends_ec' num2str(ec_flag) '.pdf'])   
 
-%% plot burst frequency
+% plot burst frequency
 freq_fig = figure;
 hold on
 sc = [];
-for s = 1:numel(stripe_index)-1
+for s = 1:numel(stripe_index)
 %     x_axis = FluoBins+rand(size(FluoBins))*1000-2000;
     e = errorbar(fluo_axis_cell{s},freq_mean_cell{s}*60,freq_ste_cell{s}*60,'o','Color','black');
     e.CapSize = 0;
@@ -164,7 +157,7 @@ for s = 1:numel(stripe_index)-1
     end
     sc = [sc scatter(fluo_axis_cell{s},freq_mean_cell{s}*60,MarkerSize,'MarkerFaceColor',cmap(s,:),'MarkerEdgeColor','black','MarkerFaceAlpha',1)];
 end
-% ylim([0 2.5])
+
 xlabel('fluorescence (au)')
 ylabel('burst frequency (1/min)')
 % legend(sc,stripe_lgd{:},'Location','northwest','Fontsize',12)
@@ -174,20 +167,20 @@ set(gca,'FontSize',14)
 saveas(freq_fig,[FigPath 'burst_freq_trends_ec' num2str(ec_flag) '.png'])
 saveas(freq_fig,[FigPath 'burst_freq_trends_ec' num2str(ec_flag) '.pdf'])
 
-%% plot burst duration
+% plot burst duration
 dur_fig = figure;
 hold on
 sc = [];
-for s = 1:numel(stripe_index)-1
-    e = errorbar(fluo_axis_cell{s},dur_mean_cell{s}/60,dur_ste_cell{s}/60,'o','Color','black');
+for s = 1:numel(stripe_index)
+    e = errorbar(fluo_axis_cell{s},dur_mean_cell{s}*60,dur_ste_cell{s}*60,'o','Color','black');
     e.CapSize = 0;
     cmap = cm2;
     if ismember(s,ectopic_ids)
         cmap = cm1(3:end,:);
     end
-    sc = [sc scatter(fluo_axis_cell{s},dur_mean_cell{s}/60,MarkerSize,'MarkerFaceColor',cmap(s,:),'MarkerEdgeColor','black')];
+    sc = [sc scatter(fluo_axis_cell{s},dur_mean_cell{s}*60,MarkerSize,'MarkerFaceColor',cmap(s,:),'MarkerEdgeColor','black')];
 end
-ylim([0.5 4])
+
 xlabel('fluorescence (au)')
 ylabel('burst duration (min)')
 grid on
@@ -197,9 +190,10 @@ set(gca,'FontSize',14)
 saveas(dur_fig,[FigPath 'burst_dur_trends_ec' num2str(ec_flag) '.png'])
 saveas(dur_fig,[FigPath 'burst_dur_trends_ec' num2str(ec_flag) '.pdf'])
 
+
 results_struct = struct;
 
-for s = 1:numel(stripe_index)-1
+for s = 1:numel(stripe_index)
     results_struct(s).fluo_axis = fluo_axis_cell{s};    
     results_struct(s).region = stripe_index(s);
     results_struct(s).ectopic_flag = ismember(s,ectopic_ids);
@@ -214,4 +208,7 @@ for s = 1:numel(stripe_index)-1
     results_struct(s).burst_frequency_ste = freq_ste_cell{s};
 end
 
-save([DataPath project '/K' num2str(K) 'w' num2str(w) '_ec' num2str(ec_flag) '_results.mat'],'results_struct')    
+save(['../out/' project '/K' num2str(K) 'w' num2str(w) '_ec' num2str(ec_flag) '_results.mat'],'results_struct')
+    
+    
+
