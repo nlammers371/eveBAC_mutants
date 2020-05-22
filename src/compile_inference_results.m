@@ -1,8 +1,8 @@
 clear 
 close all
-
+addpath('utilities')
 % set path to inference results
-project = 'eveGtMut_NullS1_normAP';
+project = 'eveGtMut_WTS1_normAP';
 % project = 'eveGtS2-WT';
 w = 7;
 K = 3;
@@ -63,6 +63,11 @@ for s = 1:numel(stripe_index)
         freq_vec = NaN(1,numel(iter_indices));
         for i = 1:numel(iter_indices)
             [r,ri] = sort(stripe_results(iter_indices(i)).r);
+            if r(1)/r(3) < -0.01 % throw out non-physical results
+                continue
+%             elseif r(1)/r(3) > 0.05               
+%                 error('wtf')
+            end
             A = stripe_results(iter_indices(i)).A_mat(ri,ri);
 %             [V,D] = eig(A);
 %             [~,di] = max(diag(D));
@@ -79,7 +84,7 @@ for s = 1:numel(stripe_index)
             [~,di] = max(diag(D));
             ss = V(:,di) / sum(V(:,di));
             % mean initiation rate
-            amp_vec(i) = (ss(2)*r(2) + ss(3)*r(3)) / (ss(2) + ss(3));        
+            amp_vec(i) = (ss(2:3)'*r(2:3)) / sum(ss(2:3));        
             % convert o rates
 %             R_eff = logm(A_eff) / Tres;
             dur_vec(i) = -1/R(1,1) *(1/ss(1) - 1);
@@ -106,8 +111,6 @@ end
         
 %% Plot
 close all
-
-
 MarkerSize = 60;
 
 if ec_flag
@@ -128,7 +131,7 @@ end
 init_fig = figure;
 hold on
 sc = [];
-for s = 1:numel(stripe_index)
+for s = 1:numel(stripe_index)-1
     e = errorbar(fluo_axis_cell{s},amp_mean_cell{s}*60,amp_ste_cell{s}*60,'o','Color','black');
     e.CapSize = 0;
     cmap = cm2;
@@ -151,7 +154,7 @@ saveas(init_fig,[FigPath 'init_rate_trends_ec' num2str(ec_flag) '.pdf'])
 freq_fig = figure;
 hold on
 sc = [];
-for s = 1:numel(stripe_index)
+for s = 1:numel(stripe_index)-1
 %     x_axis = FluoBins+rand(size(FluoBins))*1000-2000;
     e = errorbar(fluo_axis_cell{s},freq_mean_cell{s}*60,freq_ste_cell{s}*60,'o','Color','black');
     e.CapSize = 0;
@@ -161,7 +164,7 @@ for s = 1:numel(stripe_index)
     end
     sc = [sc scatter(fluo_axis_cell{s},freq_mean_cell{s}*60,MarkerSize,'MarkerFaceColor',cmap(s,:),'MarkerEdgeColor','black','MarkerFaceAlpha',1)];
 end
-ylim([0 2])
+% ylim([0 2.5])
 xlabel('fluorescence (au)')
 ylabel('burst frequency (1/min)')
 % legend(sc,stripe_lgd{:},'Location','northwest','Fontsize',12)
@@ -171,11 +174,11 @@ set(gca,'FontSize',14)
 saveas(freq_fig,[FigPath 'burst_freq_trends_ec' num2str(ec_flag) '.png'])
 saveas(freq_fig,[FigPath 'burst_freq_trends_ec' num2str(ec_flag) '.pdf'])
 
-% plot burst duration
+%% plot burst duration
 dur_fig = figure;
 hold on
 sc = [];
-for s = 1:numel(stripe_index)
+for s = 1:numel(stripe_index)-1
     e = errorbar(fluo_axis_cell{s},dur_mean_cell{s}/60,dur_ste_cell{s}/60,'o','Color','black');
     e.CapSize = 0;
     cmap = cm2;
@@ -184,7 +187,7 @@ for s = 1:numel(stripe_index)
     end
     sc = [sc scatter(fluo_axis_cell{s},dur_mean_cell{s}/60,MarkerSize,'MarkerFaceColor',cmap(s,:),'MarkerEdgeColor','black')];
 end
-ylim([0.5 3.5])
+ylim([0.5 4])
 xlabel('fluorescence (au)')
 ylabel('burst duration (min)')
 grid on
@@ -194,10 +197,9 @@ set(gca,'FontSize',14)
 saveas(dur_fig,[FigPath 'burst_dur_trends_ec' num2str(ec_flag) '.png'])
 saveas(dur_fig,[FigPath 'burst_dur_trends_ec' num2str(ec_flag) '.pdf'])
 
-
 results_struct = struct;
 
-for s = 1:numel(stripe_index)
+for s = 1:numel(stripe_index)-1
     results_struct(s).fluo_axis = fluo_axis_cell{s};    
     results_struct(s).region = stripe_index(s);
     results_struct(s).ectopic_flag = ismember(s,ectopic_ids);
